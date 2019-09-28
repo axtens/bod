@@ -1,0 +1,71 @@
+﻿AppType=StandardJava
+Build1=Default,b4j.example
+Group=Default Group
+Library1=jcore
+Library2=javaobject
+Library3=jserver
+Library4=json
+Module1=BODStart
+Module2=BODStop
+Module3=BODClose
+NumberOfFiles=0
+NumberOfLibraries=4
+NumberOfModules=3
+Version=7.51
+@EndOfDesignText@
+'Non-UI application (console / server application)
+#Region  Project Attributes 
+	#CommandLineArgs:
+	#MergeLibraries: True 
+	#CommandLineArgs: 54321
+#End Region
+
+Sub Process_Globals
+	Public gSrvr As Server
+	Private timer1 As Timer
+    Public is2close As Boolean = False
+	Public BODFolder As String = "C:\Temp"
+	Public Writer As TextWriter	
+End Sub
+
+Sub AppStart (Args() As String)
+	
+	Dim port As Int
+    port = 54321
+    If Args.Length > 0 Then
+            port = Args(0)
+			If Args.Length > 1 Then
+				BODFolder = Args(1)
+			End If
+	Else
+		Log("BOD [port] [folder]")
+		ExitApplication2(1)
+    End If
+	
+    gSrvr.Initialize("srvr")
+    gSrvr.Port = port
+  	gSrvr.AddHandler("/bod", "BODStart", False)
+	gSrvr.AddHandler("/bod/close", "BODClose", False)
+  	gSrvr.AddHandler("/bod/stop", "BODStop", False)
+
+	gSrvr.Start
+
+    timer1.Initialize("timer1", 5000)
+    timer1.Enabled=True
+		
+	StartMessageLoop
+
+End Sub
+
+Sub timer1_tick
+    If is2close=True Then
+        StopMessageLoop
+        timer1.Enabled=False
+        ExitApplication
+    End If
+End Sub
+
+public Sub UUID As String
+   Dim jo As JavaObject
+   Return jo.InitializeStatic("java.util.UUID").RunMethod("randomUUID", Null)
+End Sub
